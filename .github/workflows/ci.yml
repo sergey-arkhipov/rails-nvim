@@ -1,0 +1,21 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install luacheck and stylua
+        run: |
+          # sudo apt-get update && sudo apt-get upgrade -qq
+          sudo apt install luarocks -y
+          sudo luarocks install luacheck
+      - name: Check style
+        run: |
+          shopt -s globstar
+          ls -al
+          luacheck **/*.lua --codes
+      - name: Check formats
+        run: npx @johnnymorganz/stylua-bin -g '*.lua' --check  -- .

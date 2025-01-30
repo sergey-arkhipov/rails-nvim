@@ -1,0 +1,14 @@
+return {
+	_all = {
+		coverage = false,
+		helper = "./busted_helper.lua",
+	},
+	default = {
+		verbose = true,
+		helper = "./busted_helper.lua",
+	},
+	tests = {
+		verbose = true,
+		helper = "./busted_helper.lua",
+	},
+}
