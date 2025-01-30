@@ -120,7 +120,7 @@ function M.open_related_file()
 	-- Model -> Controller
 	if string.match(current_file, config.model_dir .. "/.*%.rb$") then
 		local model_name = string.match(current_file, config.model_dir .. "/(.*)%.rb$")
-		local controller_name = pluralize(model_name) .. "_controller.rb"
+		local controller_name = M.pluralize(model_name) .. "_controller.rb"
 		related_file = config.controller_dir .. "/" .. controller_name
 	end
 
