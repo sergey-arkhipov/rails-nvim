@@ -40,7 +40,7 @@ describe("utils", function()
 				expand = function(path)
 					-- Define a mapping of paths to their expanded versions
 					local expanded_paths = {
-						["/current/directory/_test_file.erb"] = "/current/directory/_test_file.erb",
+						["/current/directory/_test_file_erb.erb"] = "/current/directory/_test_file_erb.erb",
 						["/current/directory/_test_file.html.erb"] = "/current/directory/_test_file.html.erb",
 						["app/views/_test_file.erb"] = "app/views/_test_file.erb",
 						["app/views/_test_file.html.erb"] = "app/views/_test_file.html.erb",
@@ -57,6 +57,7 @@ describe("utils", function()
 						["/current/directory/_directory_entry.html.erb"] = true,
 						["/current/directory/_article_tag.html.erb"] = true,
 						["/current/directory/_test_file.html.erb"] = true,
+						["/current/directory/_test_file_erb.erb"] = true,
 					}
 
 					-- Check if the path exists in the set
@@ -78,38 +79,14 @@ describe("utils", function()
 			vim.cmd = original_cmd
 		end)
 
-		it("should open the correct file when a valid filename is found", function()
-			-- Spy on vim.cmd to verify it was called with the correct command
-			local spy_cmd = spy.on(vim, "cmd")
-
-			-- Call the function
-			M.custom_gf()
-
-			-- Assert that vim.cmd was called with the correct edit command
-			---@diagnostic disable-next-line: undefined-field
-			assert.spy(spy_cmd).was_called_with("edit /current/directory/_test_file.html.erb")
-		end)
-		it("should fallback to default gf behavior when no file is found", function()
-			-- Update the mock to simulate no readable file
-			vim.fn.filereadable = function()
-				return 0
+		-- Helper function to test custom_gf behavior
+		local function test_custom_gf(mocked_line, expected_command)
+			-- Update the mock to simulate a line
+			---@diagnostic disable-next-line
+			vim.api.nvim_get_current_line = function()
+				return mocked_line
 			end
-			-- Spy on vim.cmd to verify it was called with the fallback command
-			local spy_cmd = spy.on(vim, "cmd")
 
-			-- Call the function
-			M.custom_gf()
-
-			-- Assert that vim.cmd was called with the fallback gf command
-			---@diagnostic disable-next-line: undefined-field
-			assert.spy(spy_cmd).was_called_with("normal! gf")
-		end)
-
-		it("should handle @article_tags pattern correctly for plural s", function()
-			-- Update the mock to simulate a line with @article_tags
-			vim.api.nvim_get_current_line = function()
-				return "<%= render @article_tags %>"
-			end -- Mocked line for testing
 			-- Spy on vim.cmd to verify it was called with the correct command
 			local spy_cmd = spy.on(vim, "cmd")
 
@@ -118,22 +95,24 @@ describe("utils", function()
 
 			-- Assert that vim.cmd was called with the correct edit command
 			---@diagnostic disable-next-line: undefined-field
-			assert.spy(spy_cmd).was_called_with("edit /current/directory/_article_tag.html.erb")
+			assert.spy(spy_cmd).was_called_with(expected_command)
+		end
+
+		it("open the correct file when a valid filename is found", function()
+			test_custom_gf("<%= render 'test_file'  %>", "edit /current/directory/_test_file.html.erb")
 		end)
-		it("should handle @article_tags pattern correctly for plural ies", function()
-			-- Update the mock to simulate a line with @article_tags
-			vim.api.nvim_get_current_line = function()
-				return "<%= render @directory_entries %>"
-			end -- Mocked line for testing
-			-- Spy on vim.cmd to verify it was called with the correct command
-			local spy_cmd = spy.on(vim, "cmd")
+		it("open the correct file when a valid filename is found and ext is erb only", function()
+			test_custom_gf("<%= render 'test_file_erb'  %>", "edit /current/directory/_test_file_erb.erb")
+		end)
+		it("fallback to default gf behavior when no file is found", function()
+			test_custom_gf("<%= render 'no_file'  %>", "normal! gf")
+		end)
+		it("handle @article_tags pattern correctly for plural s", function()
+			test_custom_gf("<%= render @article_tags %>", "edit /current/directory/_article_tag.html.erb")
+		end)
 
-			-- Call the function
-			M.custom_gf()
-
-			-- Assert that vim.cmd was called with the correct edit command
-			---@diagnostic disable-next-line: undefined-field
-			assert.spy(spy_cmd).was_called_with("edit /current/directory/_directory_entry.html.erb")
+		it("handle @directory_entries pattern correctly for plural ies", function()
+			test_custom_gf("<%= render @directory_entries %>", "edit /current/directory/_directory_entry.html.erb")
 		end)
 	end)
 end)
