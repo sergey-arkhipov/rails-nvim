@@ -84,13 +84,8 @@ function M.setup()
 	-- Relation command (R)
 	vim.api.nvim_create_user_command("R", related.open_related_file, {})
 
-	-- Map the custom gf function to gf in Rails files
-	vim.api.nvim_create_autocmd("FileType", {
-		pattern = { "eruby", "html.erb" },
-		callback = function()
-			vim.keymap.set("n", "gf", M.custom_gf, { buffer = true, noremap = true, silent = true })
-		end,
-	})
+	-- Custom go file command (custom_gf)
+	vim.api.nvim_create_user_command("Railsgf", utils.custom_gf, {})
 end
 
 return M

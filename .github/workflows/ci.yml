@@ -19,3 +19,10 @@ jobs:
           luacheck **/*.lua --codes
       - name: Check formats
         run: npx @johnnymorganz/stylua-bin -g '*.lua' --check  -- .
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run Busted
+        uses: lunarmodules/busted@v0

@@ -12,7 +12,8 @@ function M.list_files(directory, pattern)
 	end
 
 	local files = {}
-	local handle = vim.loop.fs_scandir(directory)
+	---@diagnostic disable: undefined-field
+	local handle = vim.loop.fs_scdir(directory)
 	if handle then
 		while true do
 			local name, type = vim.loop.fs_scandir_next(handle)
@@ -25,6 +26,7 @@ function M.list_files(directory, pattern)
 		end
 	end
 	return files
+	---@diagnostic enable: undefined-field
 end
 
 function M.open_or_create_file(type, filename)
@@ -138,65 +140,71 @@ function M.open_related_file()
 end
 -- Define the custom gf function
 function M.custom_gf()
-	-- Get the current filetype
-	local filetype = vim.bo.filetype
+	-- Get the current line under the cursor
+	local line = vim.api.nvim_get_current_line()
 
-	-- Only proceed if the filetype is erb or html.erb
-	if filetype == "eruby" or filetype == "html.erb" then
-		-- Get the current line under the cursor
-		local line = vim.api.nvim_get_current_line()
+	-- Extract the file name from the line using a pattern
+	local function extract_partial(string)
+		-- Match with `partial:` keyword
+		local match_with_partial = string.match(line, "<%%=.*render%s+partial:%s*['\"]([^'\"]+)['\"]")
+		if match_with_partial then
+			return match_with_partial
+		end
 
-		-- Extract the file name from the line using a pattern
-		local filename = string.match(line, "<%%=.*render%s+['\"]([^'\"]+)['\"]")
+		-- Match without `partial:` keyword
+		return string.match(line, "<%%=.*render%s+['\"]([^'\"]+)['\"]")
+	end
 
-		-- If no filename is found, try matching the @article_tags pattern
-		if not filename then
-			filename = string.match(line, "<%%=.*render%s+@([%w_]+)")
-			if filename then
-				-- Transform @article_tags to _article_tag (drop 's' and add '_')
-				filename = "_" .. string.gsub(filename, "s$", "")
+	-- local filename = string.match(line, "<%%=.*render%s+['\"]([^'\"]+)['\"]")
+	local filename = extract_partial(line)
+	-- If no filename is found, try matching the @article_tags pattern
+	if not filename then
+		filename = string.match(line, "<%%=.*render%s+@([%w_]+)")
+		if filename then
+			-- Transform @article_tags to _article_tag (drop 's' and add '_')
+			filename = string.gsub(filename, "s$", "")
+		end
+	end
+
+	-- If a filename is found, proceed with custom logic
+	if filename then
+		-- Add an underscore to the filename if it doesn't already start with one
+		local dir, file = string.match(filename, "(.-)([^/]+)$")
+
+		if not dir then
+			dir = ""
+			file = filename
+		end
+		if not string.match(file, "^_") then
+			file = "_" .. file
+		end
+		filename = dir .. file
+
+		-- Get the directory of the current buffer
+		local current_file = vim.api.nvim_buf_get_name(0)
+		local current_dir = vim.fn.fnamemodify(current_file, ":h")
+
+		-- Use vim.fn.expand to find the file with the correct extension
+		local full_path
+
+		-- First, check in the current directory
+		full_path = vim.fn.expand(current_dir .. "/" .. file .. ".erb")
+		if vim.fn.filereadable(full_path) == 0 then
+			full_path = vim.fn.expand(current_dir .. "/" .. file .. ".html.erb")
+		end
+
+		-- If not found, check in app/views/
+		if vim.fn.filereadable(full_path) == 0 then
+			full_path = vim.fn.expand("app/views/" .. filename .. ".erb")
+			if vim.fn.filereadable(full_path) == 0 then
+				full_path = vim.fn.expand("app/views/" .. filename .. ".html.erb")
 			end
 		end
 
-		-- If a filename is found, proceed with custom logic
-		if filename then
-			-- Add an underscore to the filename if it doesn't already start with one
-			local dir, file = string.match(filename, "(.-)([^/]+)$")
-			if not dir then
-				dir = ""
-				file = filename
-			end
-			if not string.match(file, "^_") then
-				file = "_" .. file
-			end
-			filename = dir .. file
-
-			-- Get the directory of the current buffer
-			local current_file = vim.api.nvim_buf_get_name(0)
-			local current_dir = vim.fn.fnamemodify(current_file, ":h")
-
-			-- Use vim.fn.expand to find the file with the correct extension
-			local full_path
-
-			-- First, check in the current directory
-			full_path = vim.fn.expand(current_dir .. "/" .. file .. ".erb")
-			if vim.fn.filereadable(full_path) == 0 then
-				full_path = vim.fn.expand(current_dir .. "/" .. file .. ".html.erb")
-			end
-
-			-- If not found, check in app/views/
-			if vim.fn.filereadable(full_path) == 0 then
-				full_path = vim.fn.expand("app/views/" .. filename .. ".erb")
-				if vim.fn.filereadable(full_path) == 0 then
-					full_path = vim.fn.expand("app/views/" .. filename .. ".html.erb")
-				end
-			end
-
-			-- If the file exists, open it in a buffer
-			if vim.fn.filereadable(full_path) == 1 then
-				vim.cmd("edit " .. full_path)
-				return
-			end
+		-- If the file exists, open it in a buffer
+		if vim.fn.filereadable(full_path) == 1 then
+			vim.cmd("edit " .. full_path)
+			return
 		end
 	end
 
