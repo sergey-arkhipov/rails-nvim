@@ -65,7 +65,7 @@ function M.setup()
 	})
 
 	-- Erspec command
-	vim.api.nvim_create_user_command("Erspec", function(opts)
+	vim.api.nvim_create_user_command("Espec", function(opts)
 		if opts.args and opts.args ~= "" then
 			utils.open_or_create_file("spec", opts.args)
 		else

@@ -2,20 +2,23 @@
 
 I really like the rails plugin [tpope/vim-rails: rails.vim: Ruby on Rails power tools](https://github.com/tpope/vim-rails)
 
-Using in neovim leads to compatibility issues with standard functions and with other plugins.
+Using it in neovim leads to compatibility issues with standard functions and other plugins.
 
 So, this plugin implement some necessary function similar to `rails.vim`
 
-- `gf` partial name is implemented, which does not interfere with the main `gf`
+- `gf` is implemented for partials, which does not interfere with the main `gf`
 
 Fast transitions to the selection of objects are implemented for
 
 - models (Emodel)
 - controllers (Econtroller)
 - views (Eview)
-- tests specs (Erspec)
+- tests specs (Espec)
 
-The logic of transition to A (alternative) and P (related) files is partially implemented, for example, the controller file for this model is called from the model file. The plugin is currently in testing phase.
+The logic of transition to A (alternative) and R (related) files is partially implemented.
+For example, the controller file for this model is called from the model file.
+
+The plugin is currently in testing phase.
 
 ## Installation
 
