@@ -26,13 +26,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Lua
-        uses: leafo/gh-actions-lua@v8
-        with:
-          luaVersion: "5.4" # Specify the Lua version you want to use
+      - name: Install Lua and LuaRocks
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.4 luarocks
 
       - name: Install busted
-        run: sudo luarocks install busted
+        run: luarocks install busted
 
       - name: Run tests
         run: busted
