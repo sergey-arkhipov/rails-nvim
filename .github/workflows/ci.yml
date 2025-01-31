@@ -32,7 +32,7 @@ jobs:
           luaVersion: "5.4" # Specify the Lua version you want to use
 
       - name: Install busted
-        run: luarocks install busted
+        run: sudo luarocks install busted
 
       - name: Run tests
         run: busted
