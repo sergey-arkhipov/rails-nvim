@@ -1,18 +1,14 @@
 describe("utils", function()
 	local utils = require("rails-nvim.utils")
-	---@class Accert
-	---@field spy string
-	---@diagnostic disable: undefined-field 'spy'
+
 	it("return pluralize form of passed word", function()
 		assert.is_equal(utils.pluralize("Article"), "Articles")
 		assert.is_equal(utils.pluralize("Directory_entry"), "Directory_entries")
 		assert.is_equal(utils.pluralize("Huck"), "Hucks")
+		return print("return pluralize form of passed word - OK")
 	end)
-	---@diagnostic enable: undefined-field
 
-	local M = require("rails-nvim.utils") -- Replace with the actual module name
-
-	describe("M.custom_gf", function()
+	describe("utils.custom_gf", function()
 		-- Mock Neovim API functions
 		local original_api = vim.api
 		local original_fn = vim.fn
@@ -91,7 +87,7 @@ describe("utils", function()
 			local spy_cmd = spy.on(vim, "cmd")
 
 			-- Call the function
-			M.custom_gf()
+			utils.custom_gf()
 
 			-- Assert that vim.cmd was called with the correct edit command
 			---@diagnostic disable-next-line: undefined-field
@@ -113,6 +109,86 @@ describe("utils", function()
 
 		it("handle @directory_entries pattern correctly for plural ies", function()
 			test_custom_gf("<%= render @directory_entries %>", "edit /current/directory/_directory_entry.html.erb")
+		end)
+	end)
+
+	-- test_list_files.lua
+
+	describe("list_files", function()
+		-- Mock only the necessary functions
+		local vim_mock = {
+			fn = {
+				isdirectory = function(dir)
+					return dir == "test/test_dir" and 1 or 0
+				end,
+			},
+			loop = {
+				fs_scandir = function()
+					-- Simulate a directory with files
+					local files = {
+						{ name = "file1.txt", type = "file" },
+						{ name = "file2.lua", type = "file" },
+						{ name = "file3.md", type = "file" },
+						{ name = "subdir", type = "directory" },
+						{ name = "subdir2", type = "directory" },
+					}
+					local index = 0
+					-- Return the iterator function (fs_scandir_next)
+					return function()
+						index = index + 1
+						return files[index] and files[index].name, files[index] and files[index].type
+					end
+				end,
+				fs_scandir_next = function(handle)
+					-- This function is called by the iterator returned by fs_scandir
+					return handle()
+				end,
+			},
+		}
+
+		-- Backup the original vim functions
+		local original_vim_fn, original_vim_loop
+
+		before_each(function()
+			-- Backup the original vim functions
+			original_vim_fn = _G.vim.fn
+			original_vim_loop = _G.vim.loop
+
+			-- Replace only the necessary functions with mocks
+			_G.vim.fn = vim_mock.fn
+			_G.vim.loop = vim_mock.loop
+		end)
+
+		after_each(function()
+			-- Restore the original vim functions
+			_G.vim.fn = original_vim_fn
+			_G.vim.loop = original_vim_loop
+		end)
+
+		it("should list all files in a directory", function()
+			local files = utils.list_files("test/test_dir")
+			table.sort(files) -- Sort for consistent comparison
+			assert.are.same({ "file1.txt", "file2.lua", "file3.md" }, files)
+		end)
+
+		it("should filter files by pattern", function()
+			local files = utils.list_files("test/test_dir", "%.txt$") -- Match .txt files
+			table.sort(files)
+			assert.are.same({ "file1.txt" }, files)
+		end)
+
+		it("should return an empty list for a non-existent directory", function()
+			local files = utils.list_files("non_existent_directory")
+			assert.are.same({}, files)
+		end)
+
+		it("should handle an empty directory", function()
+			-- utilsock an empty directory
+			vim_mock.loop.fs_scandir = function()
+				return function() end -- No files
+			end
+			local files = utils.list_files("test/test_dir")
+			assert.are.same({}, files)
 		end)
 	end)
 end)

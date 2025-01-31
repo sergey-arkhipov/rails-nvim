@@ -13,7 +13,7 @@ function M.list_files(directory, pattern)
 
 	local files = {}
 	---@diagnostic disable: undefined-field
-	local handle = vim.loop.fs_scdir(directory)
+	local handle = vim.loop.fs_scandir(directory)
 	if handle then
 		while true do
 			local name, type = vim.loop.fs_scandir_next(handle)
