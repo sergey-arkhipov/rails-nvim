@@ -21,8 +21,18 @@ jobs:
         run: npx @johnnymorganz/stylua-bin -g '*.lua' --check  -- .
   test:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v3
-      - name: Run Busted
-        uses: lunarmodules/busted@v0
+
+      - name: Set up Lua
+        uses: leafo/gh-actions-lua@v8
+        with:
+          luaVersion: "5.4" # Specify the Lua version you want to use
+
+      - name: Install busted
+        run: luarocks install busted
+
+      - name: Run tests
+        run: busted
