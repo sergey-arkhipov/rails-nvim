@@ -25,8 +25,8 @@ function M.list_files(directory, pattern)
 			end
 		end
 	end
-	return files
 	---@diagnostic enable: undefined-field
+	return files
 end
 
 function M.open_or_create_file(type, filename)
@@ -98,6 +98,32 @@ function M.open_alternate_file()
 	end
 end
 
+function M.singularize(word)
+	-- Handle words ending in "ies" (e.g., "parties" -> "party")
+	if string.match(word, "ies$") then
+		return string.gsub(word, "ies$", "y")
+	-- Handle words ending in "es" (e.g., "boxes" -> "box", "wishes" -> "wish")
+	elseif string.match(word, "es$") then
+		-- Check for special cases like "sh", "ch", "x", or "s"
+		if string.match(word, "shes$") then
+			return string.gsub(word, "shes$", "sh")
+		elseif string.match(word, "ches$") then
+			return string.gsub(word, "ches$", "ch")
+		elseif string.match(word, "xes$") then
+			return string.gsub(word, "xes$", "x")
+		elseif string.match(word, "ses$") then
+			return string.gsub(word, "ses$", "s")
+		else
+			return string.gsub(word, "es$", "")
+		end
+	-- Handle words ending in "s" (e.g., "cats" -> "cat")
+	elseif string.match(word, "s$") then
+		return string.gsub(word, "s$", "")
+	else
+		-- If no pluralization rule applies, return the word as is
+		return word
+	end
+end
 -- helper function to pluralize a word (basic implementation)
 function M.pluralize(word)
 	-- basic pluralization rules (can be expanded as needed)
@@ -162,7 +188,7 @@ function M.custom_gf()
 		filename = string.match(line, "<%%=.*render%s+@([%w_]+)")
 		if filename then
 			-- Transform @article_tags to _article_tag (drop 's' and add '_')
-			filename = string.gsub(filename, "s$", "")
+			filename = M.singularize(filename)
 		end
 	end
 
