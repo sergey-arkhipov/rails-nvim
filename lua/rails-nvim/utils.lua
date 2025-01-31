@@ -12,20 +12,36 @@ function M.list_files(directory, pattern)
 	end
 
 	local files = {}
-	---@diagnostic disable: undefined-field
-	local handle = vim.loop.fs_scandir(directory)
-	if handle then
+
+	-- Local function to recursively list files
+	local function scan_dir(current_dir)
+		local handle = vim.uv.fs_scandir(current_dir)
+		if not handle then
+			return
+		end
+
 		while true do
-			local name, type = vim.loop.fs_scandir_next(handle)
+			local name, type = vim.uv.fs_scandir_next(handle)
 			if not name then
 				break
 			end
+
+			local full_path = current_dir .. "/" .. name
+
 			if type == "file" and (not pattern or string.match(name, pattern)) then
-				table.insert(files, name)
+				-- Get the relative path by removing the `directory` prefix
+				local relative_path = full_path:sub(#directory + 2)
+				table.insert(files, relative_path)
+			elseif type == "directory" then
+				-- Recursively scan subdirectories
+				scan_dir(full_path)
 			end
 		end
 	end
-	---@diagnostic enable: undefined-field
+
+	-- Start scanning from the root directory
+	scan_dir(directory)
+
 	return files
 end
 
@@ -65,7 +81,7 @@ function M.list_and_open_file(type)
 		end,
 	}, function(choice)
 		if choice then
-			M.open_or_create_file(directory, choice)
+			M.open_or_create_file(type, choice)
 		end
 	end)
 end

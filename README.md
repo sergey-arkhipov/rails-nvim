@@ -15,6 +15,8 @@ Fast transitions to the selection of objects are implemented for
 - views (Eview)
 - tests specs (Espec)
 
+Pass new name to create new file. Just now simply create file without standard boilerplate
+
 The logic of transition to A (alternative) and R (related) files is partially implemented.
 For example, the controller file for this model is called from the model file.
 

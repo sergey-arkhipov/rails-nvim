@@ -114,80 +114,125 @@ describe("utils", function()
 
 	-- test_list_files.lua
 
+	-- test_list_files.lua
+
+	-- Import the module containing the list_files function
+	local M = require("rails-nvim.utils") -- Replace with the actual module name
+
 	describe("list_files", function()
-		-- Mock only the necessary functions
-		local vim_mock = {
-			fn = {
-				isdirectory = function(dir)
-					return dir == "test/test_dir" and 1 or 0
-				end,
-			},
-			loop = {
-				fs_scandir = function()
-					-- Simulate a directory with files
+		-- Mock vim.fn and vim.uv
+		local vim_mock
+
+		before_each(function()
+			-- Create a mock of vim
+			vim_mock = {
+				fn = {
+					isdirectory = function(dir)
+						return dir == "test/test_dir" and 1 or 0
+					end,
+				},
+				uv = {
+					fs_scandir = function(dir)
+						-- Simulate a directory with files and subdirectories
+						if dir == "test/test_dir" then
+							local files = {
+								{ name = "file1.txt", type = "file" },
+								{ name = "file2.lua", type = "file" },
+								{ name = "subdir", type = "directory" },
+								{ name = "file3.md", type = "file" },
+							}
+							local index = 0
+							return function()
+								index = index + 1
+								return files[index] and files[index].name, files[index] and files[index].type
+							end
+						elseif dir == "test/test_dir/subdir" then
+							local files = {
+								{ name = "file4.txt", type = "file" },
+								{ name = "file5.rb", type = "file" },
+							}
+							local index = 0
+							return function()
+								index = index + 1
+								return files[index] and files[index].name, files[index] and files[index].type
+							end
+						else
+							return function() end -- No files in other directories
+						end
+					end,
+					fs_scandir_next = function(handle)
+						return handle()
+					end,
+				},
+			}
+
+			-- Replace the global vim with the mock
+			_G.vim = vim_mock
+		end)
+
+		after_each(function()
+			-- Restore the original vim (if any)
+			_G.vim = nil
+		end)
+
+		it("lists all files in a directory", function()
+			-- Mock fs_scandir to return only files in the root directory
+			vim_mock.uv.fs_scandir = function(dir)
+				if dir == "test/test_dir" then
 					local files = {
 						{ name = "file1.txt", type = "file" },
 						{ name = "file2.lua", type = "file" },
 						{ name = "file3.md", type = "file" },
-						{ name = "subdir", type = "directory" },
-						{ name = "subdir2", type = "directory" },
 					}
 					local index = 0
-					-- Return the iterator function (fs_scandir_next)
 					return function()
 						index = index + 1
 						return files[index] and files[index].name, files[index] and files[index].type
 					end
-				end,
-				fs_scandir_next = function(handle)
-					-- This function is called by the iterator returned by fs_scandir
-					return handle()
-				end,
-			},
-		}
+				else
+					return function() end -- No files in subdirectories
+				end
+			end
 
-		-- Backup the original vim functions
-		local original_vim_fn, original_vim_loop
-
-		before_each(function()
-			-- Backup the original vim functions
-			original_vim_fn = _G.vim.fn
-			original_vim_loop = _G.vim.loop
-
-			-- Replace only the necessary functions with mocks
-			_G.vim.fn = vim_mock.fn
-			_G.vim.loop = vim_mock.loop
-		end)
-
-		after_each(function()
-			-- Restore the original vim functions
-			_G.vim.fn = original_vim_fn
-			_G.vim.loop = original_vim_loop
-		end)
-
-		it("should list all files in a directory", function()
-			local files = utils.list_files("test/test_dir")
+			local files = M.list_files("test/test_dir")
 			table.sort(files) -- Sort for consistent comparison
 			assert.are.same({ "file1.txt", "file2.lua", "file3.md" }, files)
 		end)
 
-		it("should filter files by pattern", function()
-			local files = utils.list_files("test/test_dir", "%.txt$") -- Match .txt files
-			table.sort(files)
-			assert.are.same({ "file1.txt" }, files)
+		it("lists all files recursively in subdirectories", function()
+			local files = M.list_files("test/test_dir")
+			table.sort(files) -- Sort for consistent comparison
+			assert.are.same({
+				"file1.txt",
+				"file2.lua",
+				"file3.md",
+				"subdir/file4.txt",
+				"subdir/file5.rb",
+			}, files)
 		end)
 
-		it("should return an empty list for a non-existent directory", function()
-			local files = utils.list_files("non_existent_directory")
+		it("filters files by pattern", function()
+			local files = M.list_files("test/test_dir", "%.txt$") -- Match .txt files
+			table.sort(files)
+			assert.are.same({ "file1.txt", "subdir/file4.txt" }, files)
+		end)
+
+		it("returns an empty list for a non-existent directory", function()
+			vim_mock.fn.isdirectory = function()
+				return 0 -- Directory does not exist
+			end
+
+			local files = M.list_files("non_existent_directory")
 			assert.are.same({}, files)
 		end)
 
-		it("should handle an empty directory", function()
-			-- utilsock an empty directory
-			vim_mock.loop.fs_scandir = function()
+		it("handle an empty directory", function()
+			-- Mock an empty directory
+			vim_mock.uv.fs_scandir = function()
 				return function() end -- No files
 			end
-			local files = utils.list_files("test/test_dir")
+
+			local files = M.list_files("test/test_dir")
 			assert.are.same({}, files)
 		end)
 	end)
