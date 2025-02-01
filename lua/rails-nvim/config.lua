@@ -6,7 +6,7 @@ M.config = {
 	view_dir = "app/views",
 	helper_dir = "app/helpers",
 	spec_dir = "spec",
-	service_dir = "app/service",
+	service_dir = "app/services",
 }
 
 return M

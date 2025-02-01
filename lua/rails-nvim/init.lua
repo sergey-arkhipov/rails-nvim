@@ -3,12 +3,7 @@ local M = {}
 vim.opt.wildmenu = true
 vim.opt.wildmode = "longest:full,full"
 
-M.config = {
-	model_dir = "app/models",
-	controller_dir = "app/controllers",
-	view_dir = "app/views",
-	spec_dir = "spec",
-}
+M.config = require("rails-nvim.config").config
 
 function M.setup(opts)
 	M.config = vim.tbl_deep_extend("force", M.config, opts or {})

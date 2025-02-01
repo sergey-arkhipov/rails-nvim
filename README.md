@@ -34,3 +34,33 @@ The plugin is currently in testing phase.
 }
 
 ```
+
+### Customization
+
+By default directory for objects follow Rails.
+
+```bash
+  model_dir = "app/models",
+  controller_dir = "app/controllers",
+  view_dir = "app/views",
+  helper_dir = "app/helpers",
+  spec_dir = "spec",
+  service_dir = "app/services",
+
+```
+
+You can pass another structure when necessary by setup
+
+```lua
+{
+  'sergey-arkhipov/rails-nvim',
+  name = 'rails-nvim',
+  config = function() require('rails-nvim').setup(
+    {
+      spec_dir = "rspec",
+      service_dir = "services",
+    }
+  ) end,
+}
+
+```
