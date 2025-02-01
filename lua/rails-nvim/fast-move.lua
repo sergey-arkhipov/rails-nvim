@@ -57,42 +57,33 @@ local function find_and_open(directory, base_name)
 	end
 end
 
--- Go to Controller
-function M.go_controller()
+-- Generic function to handle the common logic
+local function go_to(directory)
 	local base_name = get_base_name()
 	if not base_name then
 		return
 	end
-	find_and_open("app/controllers", base_name)
-end
-
--- Go to View
-function M.go_view()
-	local base_name = get_base_name()
-	if not base_name then
-		return
-	end
-	local action_name = vim.fn.input("Action name (e.g., index): ")
-	local view_path = "app/views/" .. util.pluralize(base_name:lower()) .. "/" .. action_name .. ".html.erb"
-	open_file(view_path)
+	find_and_open(directory, base_name)
 end
 
 -- Go to Model
 function M.go_model()
-	local base_name = get_base_name()
-	if not base_name then
-		return
-	end
-	find_and_open("app/models", base_name)
+	go_to("app/models")
 end
 
 -- Go to Spec
 function M.go_spec()
-	local base_name = get_base_name()
-	if not base_name then
-		return
-	end
-	find_and_open("spec/models", base_name)
+	go_to("spec/models")
+end
+
+-- Go to Controller
+function M.go_controller()
+	go_to("app/controllers")
+end
+
+-- Go to Helper
+function M.go_helper()
+	go_to("app/helpers")
 end
 
 -- Go to Route
@@ -105,14 +96,15 @@ function M.go_route()
 		vim.cmd("/resources :" .. base_name:lower())
 	end
 end
-
--- Go to Helper
-function M.go_helper()
+-- Go to View
+function M.go_view()
 	local base_name = get_base_name()
 	if not base_name then
 		return
 	end
-	find_and_open("app/helpers", base_name)
+	local action_name = vim.fn.input("Action name (e.g., index): ")
+	local view_path = "app/views/" .. util.pluralize(base_name:lower()) .. "/" .. action_name .. ".html.erb"
+	open_file(view_path)
 end
 
 return M
