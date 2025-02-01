@@ -2,6 +2,7 @@
 local utils = require("rails-nvim.utils")
 local alternate = require("rails-nvim.alternate")
 local related = require("rails-nvim.related")
+local config = require("rails-nvim.config").config
 
 local M = {}
 
@@ -43,25 +44,16 @@ function M.setup()
 		})
 	end
 
-	-- Create commands using the function
-	create_rails_command("Econtroller", "controller")
-	create_rails_command("Ehelper", "helper")
-	create_rails_command("Emodel", "model")
-	create_rails_command("Eservice", "service")
-	create_rails_command("Espec", "spec")
-	create_rails_command("Eview", "view")
-	create_rails_command("Scontroller", "controller", "split")
-	create_rails_command("Shelper", "helper", "split")
-	create_rails_command("Smodel", "model", "split")
-	create_rails_command("Sservice", "service", "split")
-	create_rails_command("Sspec", "spec", "split")
-	create_rails_command("Sview", "view", "split")
-	create_rails_command("Vcontroller", "controller", "vsplit")
-	create_rails_command("Vhelper", "helper", "vsplit")
-	create_rails_command("Vmodel", "model", "vsplit")
-	create_rails_command("Vservice", "service", "vplit")
-	create_rails_command("Vspec", "spec", "vsplit")
-	create_rails_command("Vview", "view", "vsplit")
+	-- Create commands for each item in config
+	for type, _ in pairs(config) do
+		-- Extract the base name (e.g., "model" from "model_dir")
+		local base_name = type:gsub("_dir", "")
+
+		-- Create commands with E, S, V prefixes
+		create_rails_command("E" .. base_name, base_name, "edit")
+		create_rails_command("S" .. base_name, base_name, "split")
+		create_rails_command("V" .. base_name, base_name, "vsplit")
+	end
 	-- Alternate command (A)
 	vim.api.nvim_create_user_command("A", alternate.open_alternate_file, {})
 
