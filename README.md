@@ -64,3 +64,7 @@ You can pass another structure when necessary by setup
 }
 
 ```
+
+Moreover, user commands are created by adding the letters E V S respectively to the directory name in the configuration.
+So, model_dir will be Emodel, Smodel and Vmodel.
+Change model_dir to m_dir will Change command to Em, Sm and Vm
