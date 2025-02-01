@@ -23,16 +23,17 @@ function M.setup()
 	end
 
 	-- Function to create a Rails command
-	local function create_rails_command(command_name, file_type)
+	local function create_rails_command(command_name, file_type, command)
+		command = command or "edit"
 		vim.api.nvim_create_user_command(command_name, function(opts)
 			if not utils.open_or_create_file or not utils.list_and_open_file then
 				vim.notify("Utils functions are not available", vim.log.levels.ERROR)
 				return
 			end
 			if opts.args and opts.args ~= "" then
-				utils.open_or_create_file(file_type, opts.args)
+				utils.open_or_create_file(file_type, opts.args, command)
 			else
-				utils.list_and_open_file(file_type)
+				utils.list_and_open_file(file_type, command)
 			end
 		end, {
 			nargs = "?",
@@ -43,12 +44,24 @@ function M.setup()
 	end
 
 	-- Create commands using the function
-	create_rails_command("Emodel", "model")
 	create_rails_command("Econtroller", "controller")
-	create_rails_command("Eview", "view")
-	create_rails_command("Espec", "spec")
 	create_rails_command("Ehelper", "helper")
+	create_rails_command("Emodel", "model")
 	create_rails_command("Eservice", "service")
+	create_rails_command("Espec", "spec")
+	create_rails_command("Eview", "view")
+	create_rails_command("Scontroller", "controller", "split")
+	create_rails_command("Shelper", "helper", "split")
+	create_rails_command("Smodel", "model", "split")
+	create_rails_command("Sservice", "service", "split")
+	create_rails_command("Sspec", "spec", "split")
+	create_rails_command("Sview", "view", "split")
+	create_rails_command("Vcontroller", "controller", "vsplit")
+	create_rails_command("Vhelper", "helper", "vsplit")
+	create_rails_command("Vmodel", "model", "vsplit")
+	create_rails_command("Vservice", "service", "vplit")
+	create_rails_command("Vspec", "spec", "vsplit")
+	create_rails_command("Vview", "view", "vsplit")
 	-- Alternate command (A)
 	vim.api.nvim_create_user_command("A", alternate.open_alternate_file, {})
 

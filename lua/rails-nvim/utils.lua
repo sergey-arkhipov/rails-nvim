@@ -45,7 +45,9 @@ function M.list_files(directory, pattern)
 	return files
 end
 
-function M.open_or_create_file(type, filename)
+function M.open_or_create_file(type, filename, command)
+	command = command or "edit" -- Default to 'edit' if no command is provided
+
 	local directory = config[type .. "_dir"]
 	if not directory then
 		print("Error: Directory not found for type: " .. type)
@@ -54,14 +56,14 @@ function M.open_or_create_file(type, filename)
 
 	local full_path = directory .. "/" .. filename
 	if vim.fn.filereadable(full_path) == 1 then
-		vim.cmd("edit " .. full_path)
+		vim.cmd(command .. " " .. full_path)
 	else
-		vim.cmd("edit " .. full_path)
+		vim.cmd(command .. " " .. full_path)
 		print("Created new file: " .. full_path)
 	end
 end
 
-function M.list_and_open_file(type)
+function M.list_and_open_file(type, command)
 	print("Config:", vim.inspect(config)) -- Debug log
 	local directory = config[type .. "_dir"]
 	print("Directory for " .. type .. ": " .. (directory or "nil")) -- Debug log
@@ -80,7 +82,7 @@ function M.list_and_open_file(type)
 		end,
 	}, function(choice)
 		if choice then
-			M.open_or_create_file(type, choice)
+			M.open_or_create_file(type, choice, command)
 		end
 	end)
 end
