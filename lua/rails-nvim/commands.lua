@@ -22,62 +22,33 @@ function M.setup()
 		return files
 	end
 
-	-- Emodel command
-	vim.api.nvim_create_user_command("Emodel", function(opts)
-		if opts.args and opts.args ~= "" then
-			utils.open_or_create_file("model", opts.args)
-		else
-			utils.list_and_open_file("model")
-		end
-	end, {
-		nargs = "?",
-		complete = function(arg_lead)
-			return get_completion_candidates("model", arg_lead)
-		end,
-	})
+	-- Function to create a Rails command
+	local function create_rails_command(command_name, file_type)
+		vim.api.nvim_create_user_command(command_name, function(opts)
+			if not utils.open_or_create_file or not utils.list_and_open_file then
+				vim.notify("Utils functions are not available", vim.log.levels.ERROR)
+				return
+			end
+			if opts.args and opts.args ~= "" then
+				utils.open_or_create_file(file_type, opts.args)
+			else
+				utils.list_and_open_file(file_type)
+			end
+		end, {
+			nargs = "?",
+			complete = function(arg_lead)
+				return get_completion_candidates(file_type, arg_lead)
+			end,
+		})
+	end
 
-	-- Econtroller command
-	vim.api.nvim_create_user_command("Econtroller", function(opts)
-		if opts.args and opts.args ~= "" then
-			utils.open_or_create_file("controller", opts.args)
-		else
-			utils.list_and_open_file("controller")
-		end
-	end, {
-		nargs = "?",
-		complete = function(arg_lead)
-			return get_completion_candidates("controller", arg_lead)
-		end,
-	})
-
-	-- Eview command
-	vim.api.nvim_create_user_command("Eview", function(opts)
-		if opts.args and opts.args ~= "" then
-			utils.open_or_create_file("view", opts.args)
-		else
-			utils.list_and_open_file("view")
-		end
-	end, {
-		nargs = "?",
-		complete = function(arg_lead)
-			return get_completion_candidates("view", arg_lead)
-		end,
-	})
-
-	-- Erspec command
-	vim.api.nvim_create_user_command("Espec", function(opts)
-		if opts.args and opts.args ~= "" then
-			utils.open_or_create_file("spec", opts.args)
-		else
-			utils.list_and_open_file("spec")
-		end
-	end, {
-		nargs = "?",
-		complete = function(arg_lead)
-			return get_completion_candidates("spec", arg_lead)
-		end,
-	})
-
+	-- Create commands using the function
+	create_rails_command("Emodel", "model")
+	create_rails_command("Econtroller", "controller")
+	create_rails_command("Eview", "view")
+	create_rails_command("Espec", "spec")
+	create_rails_command("Ehelper", "helper")
+	create_rails_command("Eservice", "service")
 	-- Alternate command (A)
 	vim.api.nvim_create_user_command("A", alternate.open_alternate_file, {})
 
