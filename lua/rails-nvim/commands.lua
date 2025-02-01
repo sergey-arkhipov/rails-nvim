@@ -3,6 +3,7 @@ local utils = require("rails-nvim.utils")
 local alternate = require("rails-nvim.alternate")
 local related = require("rails-nvim.related")
 local config = require("rails-nvim.config").config
+local fast_move = require("rails-nvim.fast-move")
 
 local M = {}
 
@@ -54,6 +55,16 @@ function M.setup()
 		create_rails_command("S" .. base_name, base_name, "split")
 		create_rails_command("V" .. base_name, base_name, "vsplit")
 	end
+	--Fast move command
+
+	-- Register custom commands
+	vim.api.nvim_create_user_command("GC", fast_move.go_controller, {})
+	vim.api.nvim_create_user_command("GV", fast_move.go_view, {})
+	vim.api.nvim_create_user_command("GM", fast_move.go_model, {})
+	vim.api.nvim_create_user_command("GS", fast_move.go_spec, {})
+	vim.api.nvim_create_user_command("GR", fast_move.go_route, {})
+	vim.api.nvim_create_user_command("GH", fast_move.go_helper, {})
+
 	-- Alternate command (A)
 	vim.api.nvim_create_user_command("A", alternate.open_alternate_file, {})
 

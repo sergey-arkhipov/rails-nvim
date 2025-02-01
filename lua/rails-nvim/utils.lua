@@ -131,7 +131,7 @@ function M.singularize(word)
 		elseif string.match(word, "ses$") then
 			return string.gsub(word, "ses$", "s")
 		else
-			return string.gsub(word, "es$", "")
+			return string.gsub(word, "s$", "")
 		end
 	-- Handle words ending in "s" (e.g., "cats" -> "cat")
 	elseif string.match(word, "s$") then
