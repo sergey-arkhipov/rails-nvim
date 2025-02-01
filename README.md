@@ -14,9 +14,15 @@ Fast transitions to the selection of objects are implemented for
 - controllers (Econtroller)
 - views (Eview)
 - tests specs (Espec)
+- helpers (Ehelper)
+- services (Eservice)
 
-Pass new name to create new file. Just now simply create file without standard boilerplate
+Pass new name to create new file. Just now, simply create file without standard boilerplate.
 
+You can define self-command or modify existed by pass config parameters as showed below
+
+The logic of transition to A (alternative) and R (related) files is partially implemented.
+For example, the controller file for this model is called from the model file.
 The logic of transition to A (alternative) and R (related) files is partially implemented.
 For example, the controller file for this model is called from the model file.
 
