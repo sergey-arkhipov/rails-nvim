@@ -102,9 +102,35 @@ function M.go_view()
 	if not base_name then
 		return
 	end
-	local action_name = vim.fn.input("Action name (e.g., index): ")
-	local view_path = "app/views/" .. util.pluralize(base_name:lower()) .. "/" .. action_name .. ".html.erb"
-	open_file(view_path)
+
+	-- Construct the view directory path
+	local view_dir = "app/views/" .. util.pluralize(base_name:lower())
+
+	-- Get the list of files in the directory
+	local files = {}
+	local pfile = io.popen('ls "' .. view_dir .. '" 2>/dev/null')
+	if pfile then
+		for file in pfile:lines() do
+			table.insert(files, file)
+		end
+		pfile:close()
+	else
+		print("Error: Directory not found or empty: " .. view_dir)
+		return
+	end
+
+	-- Use vim.ui.select to choose a file
+	vim.ui.select(files, {
+		prompt = "Select a View File:",
+		format_item = function(item)
+			return item -- Display the full filename
+		end,
+	}, function(choice)
+		if choice then
+			local view_path = view_dir .. "/" .. choice
+			open_file(view_path)
+		end
+	end)
 end
 
 return M
