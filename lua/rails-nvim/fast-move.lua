@@ -35,23 +35,26 @@ local function get_base_name()
 		print("Unsupported file type. Please open a model, controller, spec, or view.")
 		return nil
 	end
-	print(base_name)
+	-- print(base_name) --debug
 	return base_name
 end
 
-local function find_file_in_directory(directory, base_name)
+local function find_files_in_directory(directory, base_name)
 	-- Use `vim.fn.glob` to search for files matching the base name in the directory
 	local pattern = directory .. "/" .. base_name .. "*"
 	local files = vim.fn.glob(pattern, true, true) -- Returns a list of matching files
-
-	-- Return the first matching file (or nil if no matches)
-	return files[1]
+	return files
 end
 
 -- Find and open a file in a directory based on the base name
 local function find_and_open(directory, base_name)
-	local file_path = find_file_in_directory(directory, base_name)
-	open_file(file_path)
+	-- Take first one if several
+	local file_path = find_files_in_directory(directory, base_name)[1]
+	if file_path then
+		open_file(file_path)
+	else
+		print("No file found" .. base_name)
+	end
 end
 
 -- Go to Controller

@@ -64,9 +64,9 @@ function M.open_or_create_file(type, filename, command)
 end
 
 function M.list_and_open_file(type, command)
-	print("Config:", vim.inspect(config)) -- Debug log
+	-- print("Config:", vim.inspect(config)) -- Debug log
 	local directory = config[type .. "_dir"]
-	print("Directory for " .. type .. ": " .. (directory or "nil")) -- Debug log
+	-- print("Directory for " .. type .. ": " .. (directory or "nil")) -- Debug log
 	local pattern = type == "view" and "%.html%.erb$" or "%.rb$"
 	local files = M.list_files(directory, pattern)
 
