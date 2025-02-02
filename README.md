@@ -8,7 +8,18 @@ So, this plugin implement some necessary function similar to `rails.vim`
 
 ### Goto partials
 
-- `gf` is implemented for partials, which does not interfere with the main `gf`
+- `Railsgf` is implemented for partials
+
+It's not interfere with main `gf` and can be add as follow:
+
+```lua
+-- Map the custom gf function to gf in Rails files
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'eruby', 'html.erb' },
+  callback = function() vim.keymap.set('n', 'gf', ':Railsgf<cr>', { buffer = true, noremap = true, silent = true }) end,
+})
+
+```
 
 ### Rails objects selectors
 
@@ -98,6 +109,7 @@ So, `model_dir` will be `Emodel`, `Smodel` and `Vmodel`.
 Change `model_dir` to `m_dir` will Change command to `Em`, `Sm` and `Vm`
 
 You can add mapping for fast moving command, for example
+
 Abbr `gr` - go rails ... for memorize
 
 ```lua
